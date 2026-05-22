@@ -3,6 +3,23 @@ name: runapi-cli
 description: Use the RunAPI CLI from agent workflows. Use when a user asks for runapi commands, JSON passthrough calls, auth status, headless server install, or terminal-based RunAPI model execution.
 documentation: https://runapi.ai/docs#runapi-cli
 catalog: https://runapi.ai/models
+metadata:
+  openclaw:
+    homepage: https://runapi.ai/docs#runapi-cli
+    primaryEnv: RUNAPI_API_KEY
+    requires:
+      bins:
+      - runapi
+    install:
+    - kind: brew
+      formula: runapi-ai/tap/runapi
+      bins:
+      - runapi
+    envVars:
+    - name: RUNAPI_API_KEY
+      required: false
+      description: Optional RunAPI API key; browser login or saved CLI config can
+        also authenticate the runapi binary.
 ---
 
 # RunAPI CLI skill

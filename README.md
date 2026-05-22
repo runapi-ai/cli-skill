@@ -1,5 +1,7 @@
 # RunAPI CLI Skill
 
+[![skills.sh](https://skills.sh/b/runapi-ai/cli-skill)](https://skills.sh/runapi-ai/cli-skill)
+
 One binary, every AI model — no package installs, no language lock-in. This skill helps Claude Code, Codex, Gemini CLI, Cursor, and 50+ agents work with the `runapi` command-line client.
 
 The canonical agent file is `skills/runapi-cli/SKILL.md`.
@@ -21,7 +23,7 @@ Pick one:
 **A.** With [skills CLI](https://github.com/vercel-labs/skills):
 
 ```bash
-npx skills add runapi-ai/cli -g
+npx skills add runapi-ai/cli-skill -g
 ```
 
 **B.** Or manually: clone this repo and copy `skills/runapi-cli/` into your agent's skills directory (e.g. `~/.claude/skills/` for Claude Code).
