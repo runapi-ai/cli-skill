@@ -15,12 +15,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/runapi-ai/cli"><strong>CLI Repo</strong></a> · <a href="https://skills.sh/runapi-ai/cli-skill"><strong>Install Skill</strong></a> · <a href="https://www.skills.sh/runapi-ai"><strong>Agent Skills</strong></a> · <a href="https://runapi.ai/models.md"><strong>Models</strong></a>
+  <a href="https://github.com/runapi-ai/cli"><strong>CLI Repo</strong></a> · <a href="https://www.skills.sh/runapi-ai"><strong>Agent Skills</strong></a> · <a href="https://runapi.ai/models"><strong>Models</strong></a>
 </p>
 
 <div align="center">
 
-[![skills.sh](https://skills.sh/b/runapi-ai/cli-skill)](https://skills.sh/runapi-ai/cli-skill)
+[![skills.sh](https://www.skills.sh/b/runapi-ai/cli-skill)](https://www.skills.sh/runapi-ai/cli-skill/runapi-cli)
+[![ClawHub](https://img.shields.io/badge/ClawHub-runapi--cli-111827)](https://clawhub.ai/runapi-ai/runapi-cli)
+[![RunAPI CLI](https://img.shields.io/badge/RunAPI-CLI-111827)](https://github.com/runapi-ai/cli)
+[![Homebrew](https://img.shields.io/badge/Homebrew-runapi--ai%2Ftap%2Frunapi-fbb040)](https://github.com/runapi-ai/homebrew-tap)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-skills.sh-2563eb)](https://www.skills.sh/runapi-ai)
+[![License](https://img.shields.io/github/license/runapi-ai/cli-skill)](https://github.com/runapi-ai/cli-skill/blob/main/LICENSE)
 
 </div>
 <br/>
