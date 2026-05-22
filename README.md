@@ -1,6 +1,29 @@
-# RunAPI CLI Skill
+<p align="center">
+  <a href="https://runapi.ai">
+    <img src="https://runapi.ai/icon.svg" height="56" alt="RunAPI">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/runapi-ai/cli-skill">
+    <h3 align="center">RunAPI CLI Skill</h3>
+  </a>
+</p>
+
+<p align="center">
+  Teach agents to install and use the RunAPI CLI for one-off model jobs.
+</p>
+
+<p align="center">
+  <a href="https://github.com/runapi-ai/cli"><strong>CLI Repo</strong></a> · <a href="https://skills.sh/runapi-ai/cli-skill"><strong>Install Skill</strong></a> · <a href="https://www.skills.sh/runapi-ai"><strong>Agent Skills</strong></a> · <a href="https://runapi.ai/models.md"><strong>Models</strong></a>
+</p>
+
+<div align="center">
 
 [![skills.sh](https://skills.sh/b/runapi-ai/cli-skill)](https://skills.sh/runapi-ai/cli-skill)
+
+</div>
+<br/>
 
 One binary, every AI model — no package installs, no language lock-in. This skill helps Claude Code, Codex, Gemini CLI, Cursor, and 50+ agents work with the `runapi` command-line client.
 
