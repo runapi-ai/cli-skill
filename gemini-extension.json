@@ -1,6 +1,6 @@
 {
   "name": "runapi-cli",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "RunAPI CLI skill for Claude Code, Codex, Gemini CLI, Cursor, and 50+ agents",
   "skills": [
     {

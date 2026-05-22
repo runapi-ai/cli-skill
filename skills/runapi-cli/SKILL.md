@@ -18,7 +18,7 @@ metadata:
     envVars:
     - name: RUNAPI_API_KEY
       required: false
-      description: Optional RunAPI API key; runapi login or saved CLI config can also authenticate the runapi binary.
+      description: Optional RunAPI API key; agents should prefer environment auth or saved CLI config. Browser login is interactive fallback only.
 ---
 
 # RunAPI CLI
@@ -40,13 +40,19 @@ The installer detects OS and architecture (Linux and macOS, amd64 and arm64), ve
 
 ## Authentication
 
+Check the current state first:
+
+```shell
+runapi auth status
+```
+
 | Source | How |
 |---|---|
-| Browser login (interactive) | `runapi login` |
-| Environment | `export RUNAPI_API_KEY=<key>` |
-| Saved config (recommended for servers) | `printf '%s' "$KEY" \| runapi auth import-token --token -` (writes `~/.config/runapi/config.json` with mode 0600) |
+| Environment (agent/headless default) | Read `RUNAPI_API_KEY` from the environment |
+| Saved config (agent/server/CI) | `printf '%s' "$RUNAPI_API_KEY" \| runapi auth import-token --token -` (writes `~/.config/runapi/config.json` with mode 0600) |
+| Browser login (interactive fallback) | `runapi login` only when the user explicitly wants browser auth |
 
-`RUNAPI_BASE_URL` overrides the default base URL. Check the current state with `runapi auth status`.
+`RUNAPI_BASE_URL` overrides the default base URL.
 
 Avoid `runapi auth import-token --token "$KEY"` directly — the value would be visible in `ps -ef` on shared hosts. Use stdin (`--token -`) or `RUNAPI_API_KEY` in the environment.
 
@@ -103,6 +109,7 @@ runapi agent install-skill --target-dir <path>  # custom location
 ## Safety notes for agents
 
 - Never paste API keys into example commands. Reference `RUNAPI_API_KEY` or `runapi auth import-token` instead.
+- Do not run interactive `runapi login` by default from an agent. Prefer `runapi auth status`, `RUNAPI_API_KEY`, and stdin token import.
 - The CLI exits non-zero on validation failures, network errors, and timeouts. Check the exit code before assuming success.
 - For long-running tasks, prefer `--async` plus a `wait` loop so the agent can release the shell promptly.
 
