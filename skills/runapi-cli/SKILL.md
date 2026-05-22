@@ -1,5 +1,5 @@
 ---
-name: cli
+name: runapi-cli
 description: Use the RunAPI CLI from agent workflows. Use when a user asks for runapi commands, JSON passthrough calls, auth status, headless server install, or terminal-based RunAPI model execution.
 documentation: https://runapi.ai/docs#runapi-cli
 catalog: https://runapi.ai/models
@@ -54,11 +54,11 @@ JSON responses go to stdout; progress lines go to stderr. Pipe to `jq` for downs
 ## Install the skill into another agent runtime
 
 ```shell
-runapi agent install-skill --target claude    # ~/.claude/skills/cli/
-runapi agent install-skill --target codex     # ~/.agents/skills/cli/
-runapi agent install-skill --target gemini    # ~/.gemini/skills/cli/
-runapi agent install-skill --target openclaw  # ~/.openclaw/skills/cli/
-runapi agent install-skill --target hermes    # ~/.hermes/skills/cli/
+runapi agent install-skill --target claude    # ~/.claude/skills/runapi-cli/
+runapi agent install-skill --target codex     # ~/.agents/skills/runapi-cli/
+runapi agent install-skill --target gemini    # ~/.gemini/skills/runapi-cli/
+runapi agent install-skill --target openclaw  # ~/.openclaw/skills/runapi-cli/
+runapi agent install-skill --target hermes    # ~/.hermes/skills/runapi-cli/
 runapi agent list-targets                     # JSON list with resolved paths
 runapi agent install-skill --target-dir <path>  # custom location
 ```
