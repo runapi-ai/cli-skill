@@ -1,11 +1,11 @@
 ---
 name: runapi-cli
-description: Use the RunAPI CLI from agent workflows. Use when a user asks for runapi commands, JSON passthrough calls, auth status, headless server install, or terminal-based RunAPI model execution.
-documentation: https://runapi.ai/docs#runapi-cli
-catalog: https://runapi.ai/models
+description: Install and use the RunAPI CLI as the universal execution layer for RunAPI models. Use when the user asks to run any RunAPI model from an agent, inspect auth, install RunAPI on a local machine/server/CI, pass JSON request bodies, wait for tasks, or automate RunAPI workflows from the terminal.
+documentation: https://runapi.ai/models.md
+catalog: https://runapi.ai/models.md
 metadata:
   openclaw:
-    homepage: https://runapi.ai/docs#runapi-cli
+    homepage: https://runapi.ai/models
     primaryEnv: RUNAPI_API_KEY
     requires:
       bins:
@@ -18,13 +18,15 @@ metadata:
     envVars:
     - name: RUNAPI_API_KEY
       required: false
-      description: Optional RunAPI API key; browser login or saved CLI config can
-        also authenticate the runapi binary.
+      description: Optional RunAPI API key; runapi login or saved CLI config can also authenticate the runapi binary.
 ---
 
-# RunAPI CLI skill
+# RunAPI CLI
 
-Use this skill when the user wants RunAPI CLI commands instead of SDK code.
+The `runapi` CLI is the universal execution layer for every RunAPI model that
+ships a CLI service. Use it whenever an agent needs to run a one-off model task,
+pass a JSON request body, wait for an async task, or script RunAPI from a
+terminal, server, or CI job.
 
 ## Install
 
@@ -48,34 +50,52 @@ The installer detects OS and architecture (Linux and macOS, amd64 and arm64), ve
 
 Avoid `runapi auth import-token --token "$KEY"` directly — the value would be visible in `ps -ef` on shared hosts. Use stdin (`--token -`) or `RUNAPI_API_KEY` in the environment.
 
-## Common commands
+## Discover services, actions, and fields
 
-- Prefer a concrete service/action command with `--input-file request.json` for complex model parameters.
-- Use JSON passthrough for create / get / run flows instead of inventing flags for every API parameter.
-- Async patterns: append `--async` to fire-and-forget; use `runapi wait TASK_ID --service SVC --action ACT` to poll later; the default sync flow polls until completion.
+The CLI is JSON-first: every service exposes typed actions, and each action
+documents its request fields through `--help`. Always inspect before composing a
+request instead of guessing flags.
 
 ```shell
-# Single create (async-aware: polls until done)
-runapi suno generate --input-file request.json
+runapi --help
+runapi suno --help
+runapi suno text-to-music --help
+```
 
-# Async create, poll later
-runapi suno generate --async --input-file request.json
-runapi wait <task-id> --service suno --action generate
+## Run a model
 
-# Inspect a task
-runapi get <task-id> --service suno --action generate
+Pass the request body as JSON through `--input-file` (or `--input` for inline
+JSON, or `-` for stdin). The default flow is synchronous and polls until the
+task completes.
+
+```shell
+# Synchronous: submit and poll until done
+runapi suno text-to-music --input-file request.json
+
+# Asynchronous: submit and return immediately, then poll separately
+runapi suno text-to-music --async --input-file request.json
+runapi wait <task-id> --service suno --action text-to-music
+
+# Inspect a task without waiting
+runapi get <task-id> --service suno --action text-to-music
 ```
 
 JSON responses go to stdout; progress lines go to stderr. Pipe to `jq` for downstream parsing.
+
+## Account
+
+```shell
+runapi account info
+runapi account balance
+```
 
 ## Install the skill into another agent runtime
 
 ```shell
 runapi agent install-skill --target claude    # ~/.claude/skills/runapi-cli/
-runapi agent install-skill --target codex     # ~/.agents/skills/runapi-cli/
+runapi agent install-skill --target codex     # ~/.codex/skills/runapi-cli/
 runapi agent install-skill --target gemini    # ~/.gemini/skills/runapi-cli/
 runapi agent install-skill --target openclaw  # ~/.openclaw/skills/runapi-cli/
-runapi agent install-skill --target hermes    # ~/.hermes/skills/runapi-cli/
 runapi agent list-targets                     # JSON list with resolved paths
 runapi agent install-skill --target-dir <path>  # custom location
 ```
@@ -86,4 +106,6 @@ runapi agent install-skill --target-dir <path>  # custom location
 - The CLI exits non-zero on validation failures, network errors, and timeouts. Check the exit code before assuming success.
 - For long-running tasks, prefer `--async` plus a `wait` loop so the agent can release the shell promptly.
 
-Link users to https://runapi.ai/docs#runapi-cli for full CLI docs and https://runapi.ai/models for the model catalog.
+## References
+
+- Browse every RunAPI model and its CLI service: https://runapi.ai/models.md
