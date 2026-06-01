@@ -56,9 +56,9 @@ runapi auth status
 
 Avoid `runapi auth import-token --token "$KEY"` directly — the value would be visible in `ps -ef` on shared hosts. Use stdin (`--token -`) or `RUNAPI_API_KEY` in the environment.
 
-## Discover services, actions, and fields
+## Discover services, commands, and fields
 
-The CLI is JSON-first: every service exposes typed actions, and each action
+The CLI is JSON-first: every service exposes typed commands, and each command
 documents its request fields through `--help`. Always inspect before composing a
 request instead of guessing flags.
 
