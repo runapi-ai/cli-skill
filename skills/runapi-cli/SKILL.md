@@ -95,6 +95,18 @@ runapi account info
 runapi account balance
 ```
 
+## Temporary files
+
+Use `runapi files create` when a model input needs a media URL but the file is local, Base64 encoded, or hosted at another URL.
+
+```shell
+runapi files create ./image.png --file-name image.png
+runapi files create --url https://example.com/image.png --file-name image.png
+runapi files create --base64 "$BASE64_IMAGE" --file-name image.png
+```
+
+The command returns JSON with `file_name`, `url`, `size_bytes`, `mime_type`, `created_at`, and `expires_at`. The returned `url` is a one-hour temporary File Upload URL. Use it in endpoint fields that accept media URLs, such as `source_image_url`, `source_image_urls`, or `source_audio_url`; check the model/action docs for the exact field name. Add `--url-only` when a script needs only the temporary URL on stdout.
+
 ## Install the skill into another agent runtime
 
 ```shell
@@ -112,6 +124,7 @@ runapi agent install-skill --target-dir <path>  # custom location
 - Do not run interactive `runapi login` by default from an agent. Prefer `runapi auth status`, `RUNAPI_API_KEY`, and stdin token import.
 - The CLI exits non-zero on validation failures, network errors, and timeouts. Check the exit code before assuming success.
 - For long-running tasks, prefer `--async` plus a `wait` loop so the agent can release the shell promptly.
+- RunAPI-generated file URLs are temporary. Download and store generated images, videos, audio, or other files in your own durable storage within 7 days; do not treat returned URLs as long-term assets.
 
 ## References
 

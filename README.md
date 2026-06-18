@@ -73,6 +73,9 @@ runapi wait <task-id> --service kling --action text-to-video
 # Check account balance
 runapi account balance
 
+# Upload a local file and print only the temporary URL
+runapi files create ./image.png --url-only
+
 # Receive webhook callbacks on your dev machine
 runapi listen
 
@@ -85,6 +88,7 @@ JSON responses go to stdout; progress lines go to stderr. Pipe to `jq` for downs
 ## What you can do
 
 - **Call any AI model API** from the terminal — video, image, music, audio, speech, upscaling. Each service exposes `create`, `get`, and `run` subcommands with JSON input.
+- **Upload temporary files** with `runapi files create` from a local path, URL, or Base64 data, then pass the one-hour returned `url` into media URL fields such as `source_image_url`, `source_image_urls`, or `source_audio_url`. Check the model docs for the exact field name.
 - **Authenticate** via browser login (`runapi login`), environment variable (`RUNAPI_API_KEY`), or headless token import for CI/servers.
 - **Manage async tasks** — submit with `--async`, poll with `runapi wait`, or let the default sync flow handle polling automatically.
 - **Receive callbacks locally** via `runapi listen` — test async workflows without deploying a public endpoint.
@@ -102,6 +106,7 @@ JSON responses go to stdout; progress lines go to stderr. Pipe to `jq` for downs
 - Never paste API keys into commands. Use `RUNAPI_API_KEY` or `runapi auth import-token --token -` with stdin.
 - Prefer `--input-file request.json` for complex parameters instead of inline JSON.
 - For long-running tasks, use `--async` plus `runapi wait` so the agent can release the shell promptly.
+- RunAPI-generated file URLs are temporary. Download and store generated images, videos, audio, or other files in your own durable storage within 7 days; do not treat returned URLs as long-term assets.
 - Link pricing and rate-limit answers to the variant page on https://runapi.ai/models, not this README.
 
 ## License
