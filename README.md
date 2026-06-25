@@ -76,6 +76,9 @@ runapi account balance
 # Upload a local file and print only the temporary URL
 runapi files create ./image.png --url-only
 
+# Or pass a local file path directly in a model media URL field
+runapi gpt-image edit-image --input '{"model":"gpt-image-1.5","prompt":"remove the background","source_image_urls":["./image.png"],"aspect_ratio":"1:1","quality":"medium"}'
+
 # Receive webhook callbacks on your dev machine
 runapi listen
 
@@ -88,7 +91,7 @@ JSON responses go to stdout; progress lines go to stderr. Pipe to `jq` for downs
 ## What you can do
 
 - **Call any AI model API** from the terminal — video, image, music, audio, speech, upscaling. Each service exposes `create`, `get`, and `run` subcommands with JSON input.
-- **Upload temporary files** with `runapi files create` from a local path, URL, or Base64 data, then pass the one-hour returned `url` into media URL fields such as `source_image_url`, `source_image_urls`, or `source_audio_url`. Check the model docs for the exact field name.
+- **Use local media files directly** in top-level model media URL fields such as `source_image_url`, `source_image_urls`, `reference_image_urls`, `first_frame_image_url`, `mask_url`, `upload_url`, or `source_audio_url`; the CLI uploads readable local files before submitting the request. Use `runapi files create` when you need a URL to reuse, or when the source is a remote URL or Base64 data.
 - **Authenticate** via browser login (`runapi login`), environment variable (`RUNAPI_API_KEY`), or headless token import for CI/servers.
 - **Manage async tasks** — submit with `--async`, poll with `runapi wait`, or let the default sync flow handle polling automatically.
 - **Receive callbacks locally** via `runapi listen` — test async workflows without deploying a public endpoint.
