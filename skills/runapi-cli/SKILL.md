@@ -18,7 +18,7 @@ metadata:
     envVars:
     - name: RUNAPI_API_KEY
       required: false
-      description: Optional RunAPI API key; agents should prefer environment auth or saved CLI config. Browser login is interactive fallback only.
+      description: Optional RunAPI API key; agents should prefer environment auth or saved shared config for headless use. Browser login can be completed with `runapi login` or the MCP `login` tool.
 ---
 
 # RunAPI CLI
@@ -50,9 +50,11 @@ runapi auth status
 |---|---|
 | Environment (agent/headless default) | Read `RUNAPI_API_KEY` from the environment |
 | Saved config (agent/server/CI) | `printf '%s' "$RUNAPI_API_KEY" \| runapi auth import-token --token -` (writes `~/.config/runapi/config.json` with mode 0600) |
-| Browser login (interactive fallback) | `runapi login` only when the user explicitly wants browser auth |
+| Browser login (interactive fallback) | `runapi login` in a terminal, or the MCP `login` tool from an MCP host |
 
 `RUNAPI_BASE_URL` overrides the default base URL.
+
+The RunAPI MCP Server reads the same `~/.config/runapi/config.json` as the CLI. After `runapi login` or the MCP `login` tool completes, authenticated MCP tools can use the saved credentials after the host reloads config if needed.
 
 Avoid `runapi auth import-token --token "$KEY"` directly — the value would be visible in `ps -ef` on shared hosts. Use stdin (`--token -`) or `RUNAPI_API_KEY` in the environment.
 
@@ -95,6 +97,55 @@ runapi account info
 runapi account balance
 ```
 
+## Local callback listeners
+
+Listener access requires the credential issued by `runapi login`; an ordinary imported API key cannot list callback candidates, read a Listen Signing Secret, or open a listener. This restriction applies only to listener operations: ordinary API keys can still create and query tasks.
+
+Before running a listener from an agent, check the saved auth and list the current member's key metadata:
+
+```shell
+runapi auth status
+runapi api-keys list --json
+```
+
+If the API returns `cli_listen_required`, explain that the imported key keeps its existing API access but cannot list or select listener keys. Ask the user to remove any `--api-key` or `RUNAPI_API_KEY` override, then complete `runapi login` in their terminal (or the MCP `login` tool) and retry `runapi listen`. Do not retry with an imported API key or a management key.
+
+Each candidate contains `id`, `name`, `masked_token`, and `enabled`. Select an enabled stable `id`; names and masks are display context only, so renaming a key does not invalidate a stored selection. When more than one enabled key is available and the project does not identify one, present the candidates to the user instead of choosing one silently.
+
+Selection precedence is:
+
+1. `--callback-api-key-id <id>` for this invocation. It does not rewrite project config.
+2. `callback_api_key_id` from `.runapi.toml` at the git root, or from the current directory outside a git repository.
+3. The TTY selector. It writes the selected ID only after the server validates the listener session.
+
+Non-TTY invocations never select automatically. Without a flag or config, the `callback_api_key_required` error includes the candidate list so an agent can choose explicitly.
+
+Project config has one allowed field and is safe to commit:
+
+```toml
+callback_api_key_id = "token_abc123"
+```
+
+Do not add credentials, key names, masks, signing secrets, forwarding URLs, or `base_url` to `.runapi.toml`; unknown fields are rejected.
+
+Pass the selected ID explicitly from an agent. The listener receives only tasks created with that API key:
+
+```shell
+runapi listen localhost:3000/webhooks/runapi --callback-api-key-id token_abc123
+```
+
+Startup output identifies the selected key by name, ID, and mask, prints the absolute project config path, and prints that key's stable Listen Signing Secret. To inject the secret without starting a listener, keep it out of logs and project config:
+
+```shell
+RUNAPI_WEBHOOK_SECRET="$(runapi listen --print-secret --callback-api-key-id token_abc123)"
+```
+
+Recovery rules:
+
+- A committed ID owned by another member is not reusable. Run `runapi api-keys list --json`, select that member's key, and pass its ID explicitly. Update the one-line project config only when the project should adopt that member-specific selection.
+- `callback_api_key_unusable` means the selected key was disabled, discarded, or lost membership. The listener exits without falling back; list keys and select another one explicitly.
+- After upgrading from the previous listener behavior, update the CLI, run `runapi login` again, restart listeners, and replace the old local webhook secret.
+
 ## Temporary files
 
 Model commands accept readable local file paths in top-level media URL fields, such as `source_image_url`, `source_image_urls`, `reference_image_urls`, `first_frame_image_url`, `mask_url`, `upload_url`, or `source_audio_url`. The CLI uploads each local file before submitting the request and replaces the field value with the temporary URL. Remote `http://` and `https://` values stay unchanged.
@@ -103,7 +154,7 @@ Use `runapi files create` when you need an explicit temporary URL for reuse, or 
 
 ```shell
 runapi files create ./image.png --file-name image.png
-runapi files create --url https://example.com/image.png --file-name image.png
+runapi files create --url https://cdn.runapi.ai/public/samples/mask.png --file-name image.png
 runapi files create --base64 "$BASE64_IMAGE" --file-name image.png
 ```
 
@@ -120,10 +171,33 @@ runapi agent list-targets                     # JSON list with resolved paths
 runapi agent install-skill --target-dir <path>  # custom location
 ```
 
+## Troubleshooting CLI/skill drift
+
+This skill is installed independently from the `runapi` binary and usually
+tracks the newest CLI behavior. If a command, action, flag, or input field
+described here is unavailable or behaves differently, check the installed CLI
+version and update it before changing the request:
+
+```shell
+runapi version
+brew upgrade runapi-ai/tap/runapi
+# or reinstall
+curl -fsSL https://runapi.ai/cli/install.sh | sh
+```
+
+After updating, inspect the command help again:
+
+```shell
+runapi --help
+runapi <service> --help
+runapi <service> <action> --help
+```
+
 ## Safety notes for agents
 
 - Never paste API keys into example commands. Reference `RUNAPI_API_KEY` or `runapi auth import-token` instead.
-- Do not run interactive `runapi login` by default from an agent. Prefer `runapi auth status`, `RUNAPI_API_KEY`, and stdin token import.
+- Do not run interactive `runapi login` by default from an agent. In MCP hosts, guide the user through the `login` tool; in terminal/headless contexts, prefer `runapi auth status`, `RUNAPI_API_KEY`, and stdin token import unless the user explicitly wants browser auth.
+- Listener operations are the exception: when they return `cli_listen_required`, an imported key cannot recover. Explain that it keeps its existing API access but cannot list or select listener keys. Ask the user to remove any `--api-key` or `RUNAPI_API_KEY` override and complete browser-backed login; never store the returned credential or Listen Signing Secret in `.runapi.toml`.
 - The CLI exits non-zero on validation failures, network errors, and timeouts. Check the exit code before assuming success.
 - For long-running tasks, prefer `--async` plus a `wait` loop so the agent can release the shell promptly.
 - RunAPI-generated file URLs are temporary. Download and store generated images, videos, audio, or other files in your own durable storage within 7 days; do not treat returned URLs as long-term assets.

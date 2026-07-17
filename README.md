@@ -79,8 +79,9 @@ runapi files create ./image.png --url-only
 # Or pass a local file path directly in a model media URL field
 runapi gpt-image edit-image --input '{"model":"gpt-image-1.5","prompt":"remove the background","source_image_urls":["./image.png"],"aspect_ratio":"1:1","quality":"medium"}'
 
-# Receive webhook callbacks on your dev machine
-runapi listen
+# Discover a callback API key and receive only its callbacks on your dev machine
+runapi api-keys list --json
+runapi listen localhost:3000/webhooks/runapi --callback-api-key-id token_abc123
 
 # Install this skill into another agent runtime
 runapi agent install-skill --target codex
@@ -88,11 +89,48 @@ runapi agent install-skill --target codex
 
 JSON responses go to stdout; progress lines go to stderr. Pipe to `jq` for downstream parsing.
 
+## Local callback listeners
+
+Listener operations require the credential issued by `runapi login`; an ordinary imported API key or management key cannot open the listener surface.
+
+```bash
+runapi login
+runapi api-keys list --json
+runapi listen localhost:3000/webhooks/runapi --callback-api-key-id token_abc123
+```
+
+The key list returns each candidate's stable ID, name, mask, and enabled state. Agents should use a known project key or ask the user when multiple enabled keys exist; they must not choose one silently. The listener receives only tasks created with the selected key.
+
+Interactive users can omit the flag. After server validation, the CLI stores only the stable ID in `.runapi.toml` at the git root, or in the current directory outside a git repository:
+
+```toml
+callback_api_key_id = "token_abc123"
+```
+
+The file is safe to commit, but it must not contain credentials, names, masks, secrets, forwarding URLs, or `base_url`. Renaming the API key does not break the stored ID. Another Account member must select a key they own.
+
+If listener access returns `cli_listen_required`, the imported API key keeps its existing API access but cannot list or select listener keys. Remove any `--api-key` or `RUNAPI_API_KEY` override, run `runapi login`, then retry `runapi listen`; importing another key cannot recover. If the selected key becomes unusable, list keys and choose another explicitly because the CLI never falls back to a different key. Print the selected key's secret without starting a listener with:
+
+```bash
+RUNAPI_WEBHOOK_SECRET="$(runapi listen --print-secret --callback-api-key-id token_abc123)"
+```
+
+## Troubleshooting
+
+The skill usually tracks the newest CLI behavior. If a command, flag, or input field from this skill is unavailable, update the `runapi` binary first:
+
+```bash
+runapi version
+brew upgrade runapi-ai/tap/runapi
+# or reinstall
+curl -fsSL https://runapi.ai/cli/install.sh | sh
+```
+
 ## What you can do
 
 - **Call any AI model API** from the terminal — video, image, music, audio, speech, upscaling. Each service exposes `create`, `get`, and `run` subcommands with JSON input.
 - **Use local media files directly** in top-level model media URL fields such as `source_image_url`, `source_image_urls`, `reference_image_urls`, `first_frame_image_url`, `mask_url`, `upload_url`, or `source_audio_url`; the CLI uploads readable local files before submitting the request. Use `runapi files create` when you need a URL to reuse, or when the source is a remote URL or Base64 data.
-- **Authenticate** via browser login (`runapi login`), environment variable (`RUNAPI_API_KEY`), or headless token import for CI/servers.
+- **Authenticate** via browser login (`runapi login`), MCP `login` tool, environment variable (`RUNAPI_API_KEY`), or headless token import for CI/servers. The CLI and MCP Server share `~/.config/runapi/config.json`.
 - **Manage async tasks** — submit with `--async`, poll with `runapi wait`, or let the default sync flow handle polling automatically.
 - **Receive callbacks locally** via `runapi listen` — test async workflows without deploying a public endpoint.
 - **Install skills** into any agent runtime with `runapi agent install-skill --target <runtime>`.
