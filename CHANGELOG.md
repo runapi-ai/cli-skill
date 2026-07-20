@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.11](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.11) - 2026-07-20
+
+### Changed
+- Document explicit per-key Listen Signing Secret rotation without replacing the business API key.
+- Require local verifier updates and listener restarts after rotation.
+
+
 ## [v0.2.10](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.10) - 2026-07-17
 
 ### Changed

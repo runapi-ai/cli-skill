@@ -140,6 +140,14 @@ Startup output identifies the selected key by name, ID, and mask, prints the abs
 RUNAPI_WEBHOOK_SECRET="$(runapi listen --print-secret --callback-api-key-id token_abc123)"
 ```
 
+If the secret is exposed, rotate only the selected key's Listen Signing Secret:
+
+```shell
+RUNAPI_WEBHOOK_SECRET="$(runapi listen --rotate-secret --callback-api-key-id token_abc123)"
+```
+
+This invalidates every active listener using the selected key without rotating its business API credential. Update each local verifier with the printed secret, then restart those listeners.
+
 Recovery rules:
 
 - A committed ID owned by another member is not reusable. Run `runapi api-keys list --json`, select that member's key, and pass its ID explicitly. Update the one-line project config only when the project should adopt that member-specific selection.

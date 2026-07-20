@@ -115,6 +115,14 @@ If listener access returns `cli_listen_required`, the imported API key keeps its
 RUNAPI_WEBHOOK_SECRET="$(runapi listen --print-secret --callback-api-key-id token_abc123)"
 ```
 
+If that secret is exposed, rotate it without replacing the business API key:
+
+```bash
+RUNAPI_WEBHOOK_SECRET="$(runapi listen --rotate-secret --callback-api-key-id token_abc123)"
+```
+
+Rotation invalidates every active listener using the selected key. Update each local verifier, then restart those listeners.
+
 ## Troubleshooting
 
 The skill usually tracks the newest CLI behavior. If a command, flag, or input field from this skill is unavailable, update the `runapi` binary first:
