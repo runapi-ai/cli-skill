@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.12](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.12) - 2026-07-28
+
+### Added
+- Document public Price Schedule and task reservation quote commands.
+
+
 ## [v0.2.11](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.11) - 2026-07-20
 
 ### Changed
