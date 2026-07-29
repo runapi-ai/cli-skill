@@ -145,7 +145,7 @@ curl -fsSL https://runapi.ai/cli/install.sh | sh
 
 ## Routing
 
-- CLI docs: https://runapi.ai/docs#runapi-cli
+- CLI docs: https://runapi.ai/docs/resources/cli
 - Model catalog: https://runapi.ai/models
 - CLI repository: https://github.com/runapi-ai/cli
 - Skill repository: https://github.com/runapi-ai/cli-skill
