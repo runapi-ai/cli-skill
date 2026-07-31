@@ -101,6 +101,8 @@ runapi listen localhost:3000/webhooks/runapi --callback-api-key-id token_abc123
 
 The key list returns each candidate's stable ID, name, mask, and enabled state. Agents should use a known project key or ask the user when multiple enabled keys exist; they must not choose one silently. The listener receives only tasks created with the selected key.
 
+The CLI acknowledges each valid listener event before attempting the local HTTP request. It forwards each event locally once and reports non-2xx responses or connection errors without requesting a listener replay. This local debugging behavior does not change delivery retries for a Task's `callback_url`.
+
 Interactive users can omit the flag. After server validation, the CLI stores only the stable ID in `.runapi.toml` at the git root, or in the current directory outside a git repository:
 
 ```toml

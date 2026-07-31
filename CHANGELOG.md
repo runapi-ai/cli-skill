@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.13](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.13) - 2026-07-31
+
+### Changed
+- Document the acknowledge-before-forward boundary and one-attempt handling for local HTTP failures.
+
+
 ## [v0.2.12](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.12) - 2026-07-28
 
 ### Added
