@@ -101,7 +101,11 @@ runapi listen localhost:3000/webhooks/runapi --callback-api-key-id token_abc123
 
 The key list returns each candidate's stable ID, name, mask, and enabled state. Agents should use a known project key or ask the user when multiple enabled keys exist; they must not choose one silently. The listener receives only tasks created with the selected key.
 
+Each Account can run up to 100 active listeners per Callback Subscription Key and 1,000 in total. When a limit is reached, stop an idle listener or wait and retry; the response identifies which limit is full instead of requiring another Account.
+
 The CLI acknowledges each valid listener event before attempting the local HTTP request. It forwards each event locally once and reports non-2xx responses or connection errors without requesting a listener replay. This local debugging behavior does not change delivery retries for a Task's `callback_url`.
+
+Idle polling checks for events about every 15 to 30 seconds. Events are normally found within about 15 seconds and are read immediately when available. If a limit is reached, the CLI honors the server's `Retry-After` delay when present; otherwise wait or stop an idle listener before trying again.
 
 Interactive users can omit the flag. After server validation, the CLI stores only the stable ID in `.runapi.toml` at the git root, or in the current directory outside a git repository:
 

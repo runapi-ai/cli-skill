@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.14](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.14) - 2026-08-04
+
+### Changed
+- Explain local listener limits, idle polling timing, immediate event delivery, and retry guidance.
+- Document that local listeners honor the server's Retry-After delay when retrying.
+
+
 ## [v0.2.13](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.13) - 2026-07-31
 
 ### Changed

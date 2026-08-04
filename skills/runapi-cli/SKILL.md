@@ -150,6 +150,8 @@ runapi listen localhost:3000/webhooks/runapi --callback-api-key-id token_abc123
 
 The CLI acknowledges each valid listener event before attempting the local HTTP request. It forwards each event locally once and reports non-2xx responses or connection errors without requesting a listener replay. This local debugging behavior does not change delivery retries for a Task's `callback_url`.
 
+Each Account can run up to 100 active listeners per Callback Subscription Key and 1,000 in total. When a limit is reached, stop an idle listener or wait and retry; the response identifies which limit is full. The CLI honors the server's `Retry-After` delay when present. Idle polling checks for events about every 15 to 30 seconds. Events are normally found within about 15 seconds and are read immediately when available.
+
 Startup output identifies the selected key by name, ID, and mask, prints the absolute project config path, and prints that key's stable Listen Signing Secret. To inject the secret without starting a listener, keep it out of logs and project config:
 
 ```shell
