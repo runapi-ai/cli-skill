@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.15](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.15) - 2026-08-10
+
+### Changed
+- Complete marketplace distribution for the RunAPI CLI skill.
+
+
 ## [v0.2.14](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.14) - 2026-08-04
 
 ### Changed
