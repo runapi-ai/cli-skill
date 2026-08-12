@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.16](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.16) - 2026-08-12
+
+### Changed
+- Select a listed service and operation from installed CLI help before reading the request contract or submitting a one-off task.
+- Route one-off results through installed CLI commands with synchronous defaults, explicit async requests, verified deliverables, and bounded recovery.
+
+
 ## [v0.2.15](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.15) - 2026-08-10
 
 ### Changed
