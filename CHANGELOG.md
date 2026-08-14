@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.17](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.17) - 2026-08-14
+
+### Fixed
+- Remove the installation example that directs users to a deleted CLI release.
+
+
 ## [v0.2.16](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.16) - 2026-08-12
 
 ### Changed

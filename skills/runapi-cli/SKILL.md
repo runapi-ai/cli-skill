@@ -41,7 +41,6 @@ not to a guessed CLI command.
 |---|---|
 | macOS / Linux (interactive) | `brew install runapi-ai/tap/runapi` |
 | Server / CI (headless) | `curl -fsSL https://runapi.ai/cli/install.sh \| sh` |
-| Pin a specific version | `curl -fsSL https://runapi.ai/cli/install.sh \| sh -s -- --version v0.1.0` |
 
 The installer detects OS and architecture (Linux and macOS, amd64 and arm64), verifies a SHA-256 checksum from `https://runapi.ai/cli/latest.json`, and refuses to write the binary if verification fails.
 
