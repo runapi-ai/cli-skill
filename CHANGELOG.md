@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.0](https://github.com/runapi-ai/cli-skill/releases/tag/v0.3.0) - 2026-08-17
+
+### Added
+- Guide agents through persistent File lifecycle commands and multipart Upload composition while preserving temporary file upload guidance.
+
+
 ## [v0.2.17](https://github.com/runapi-ai/cli-skill/releases/tag/v0.2.17) - 2026-08-14
 
 ### Fixed

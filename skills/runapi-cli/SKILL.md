@@ -188,14 +188,15 @@ Recovery rules:
 - `callback_api_key_unusable` means the selected key was disabled, discarded, or lost membership. The listener exits without falling back; list keys and select another one explicitly.
 - After upgrading from the previous listener behavior, update the CLI, run `runapi login` again, restart listeners, and replace the old local webhook secret.
 
-## Temporary files
+## Files and Uploads
 
 Pass an agent-readable local path directly to a top-level media URL field. The
 CLI uploads the file before submitting the request and replaces the field value
 with the temporary URL. Remote `http://` and `https://` values stay unchanged.
 
 Use `runapi files create` only for a reusable URL, Base64 input, or a
-contract-required upload.
+contract-required upload. This temporary upload command returns a URL and
+remains available unchanged.
 
 ```shell
 runapi files create ./image.png --file-name image.png
@@ -204,6 +205,30 @@ runapi files create --base64 "$BASE64_IMAGE" --file-name image.png
 ```
 
 The command returns JSON with `file_name`, `url`, `size_bytes`, `mime_type`, `created_at`, and `expires_at`. The returned `url` is a one-hour temporary File Upload URL. Use it in endpoint fields that accept media URLs; check the model/action docs for the exact field name. Add `--url-only` when a script needs only the temporary URL on stdout.
+
+Use persistent Files when the caller needs a stable File ID instead of a URL.
+Inspect each command before composing it:
+
+```shell
+runapi files create-file ./knowledge.pdf
+runapi files list --order desc
+runapi files retrieve file_123
+runapi files content file_123 --output ./knowledge-copy.pdf
+runapi files delete file_123
+```
+
+Use multipart Uploads to send Parts before composing the final File. Preserve
+Part ID order when retrying an uncertain completion response:
+
+```shell
+runapi uploads create --bytes 1048576 --filename archive.bin --mime-type application/octet-stream
+runapi uploads add-part upload_123 ./archive.part-01
+runapi uploads complete upload_123 --part-id part_123
+runapi uploads cancel upload_123
+```
+
+Inspect `runapi files --help`, `runapi uploads --help`, and each selected
+subcommand's help for the installed lifecycle contract.
 
 ## Install the skill into another agent runtime
 

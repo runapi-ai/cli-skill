@@ -76,6 +76,10 @@ runapi account balance
 # Upload a local file and print only the temporary URL
 runapi files create ./image.png --url-only
 
+# Create and download a persistent File resource
+FILE_ID=$(runapi files create-file ./knowledge.pdf | jq -r .id)
+runapi files content "$FILE_ID" --output ./knowledge-copy.pdf
+
 # Or pass a local file path directly in a model media URL field
 runapi gpt-image edit-image --input '{"model":"gpt-image-1.5","prompt":"remove the background","source_image_urls":["./image.png"],"aspect_ratio":"1:1","quality":"medium"}'
 
@@ -143,7 +147,8 @@ curl -fsSL https://runapi.ai/cli/install.sh | sh
 ## What you can do
 
 - **Call any AI model API** from the terminal — video, image, music, audio, speech, upscaling. Each service exposes `create`, `get`, and `run` subcommands with JSON input.
-- **Use local media files directly** in top-level model media URL fields such as `source_image_url`, `source_image_urls`, `reference_image_urls`, `first_frame_image_url`, `mask_url`, `upload_url`, or `source_audio_url`; the CLI uploads readable local files before submitting the request. Use `runapi files create` when you need a URL to reuse, or when the source is a remote URL or Base64 data.
+- **Use local media files directly** in top-level model media URL fields such as `source_image_url`, `source_image_urls`, `reference_image_urls`, `first_frame_image_url`, `mask_url`, `upload_url`, or `source_audio_url`; the CLI uploads readable local files before submitting the request. Use `runapi files create` when you need a temporary URL to reuse, or when the source is a remote URL or Base64 data.
+- **Manage persistent Files** with `files create-file`, `list`, `retrieve`, `content`, and `delete`, or compose a File with `uploads create`, `add-part`, `complete`, and `cancel`.
 - **Authenticate** via browser login (`runapi login`), MCP `login` tool, environment variable (`RUNAPI_API_KEY`), or headless token import for CI/servers. The CLI and MCP Server share `~/.config/runapi/config.json`.
 - **Manage async tasks** — submit with `--async`, poll with `runapi wait`, or let the default sync flow handle polling automatically.
 - **Receive callbacks locally** via `runapi listen` — test async workflows without deploying a public endpoint.
