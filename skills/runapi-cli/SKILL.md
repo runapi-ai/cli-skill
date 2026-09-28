@@ -1,6 +1,6 @@
 ---
 name: runapi-cli
-description: Install and use the RunAPI CLI for one-off artifacts and results from registered CLI-backed services. Use when the user asks an agent to inspect installed commands, run a supported service, pass JSON request bodies, wait for tasks, or automate a supported RunAPI workflow from the terminal. Use an SDK for app or production integration.
+description: Use the RunAPI CLI for one-off artifacts and results, or RunAPI's standard x402 REST flow for wallet-funded Task calls without an API key. Use when an agent needs to discover models or prices, create a paid Task, poll its result, or run a supported CLI service. Use an SDK for app or production integration.
 documentation: https://runapi.ai/models.md
 catalog: https://runapi.ai/models.md
 metadata:
@@ -126,6 +126,159 @@ runapi pricing quote --service suno --action text_to_music --model suno-v4 \
 runapi pricing quote --service suno --action text_to_music --model suno-v4 \
   --params-file pricing-inputs.json
 ```
+
+## Self-funded x402 REST calls (no API key)
+
+Use this route when the agent has a wallet and must pay for a supported Task
+endpoint directly. It is REST-only; the CLI and MCP server do not add an x402
+transport. Do not register, create an API key, buy credits, or create a Task
+before payment.
+
+Use the x402 v2 client provided by the agent runtime or wallet platform. An
+available wallet signer and x402 v2 client are prerequisites; otherwise stop
+and report the missing prerequisite. Use standard x402 signing; the API-key
+path remains a separate authentication route.
+
+### Prerequisites and discovery
+
+The agent platform owns the wallet and signing operation. The wallet must hold
+USDC on Base mainnet (`eip155:8453`), and the signing key must stay in the
+platform's secure wallet boundary. The v1 asset is USDC contract
+`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`.
+
+Discover models and unauthenticated public prices before spending:
+
+```shell
+BASE_URL="${RUNAPI_BASE_URL:-https://runapi.ai}"
+curl -fsS "$BASE_URL/api/v1/models"
+curl -fsS "$BASE_URL/api/v1/price_schedules?service=suno&action=text_to_music&model=suno-v4"
+curl -fsS -X POST "$BASE_URL/api/v1/price_quotes" \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "service":"suno",
+  "action":"text_to_music",
+  "model":"suno-v4",
+  "params":{
+    "prompt":"A chill lo-fi beat"
+  }
+}'
+```
+
+Only an endpoint whose billing shape is `per_call`, has `unit_price_cents`, and
+is at most 10 USDC is automatically eligible. The price response is discovery
+data; the payment amount, asset, recipient, and network come only from the
+`accepts` entry in the `PAYMENT-REQUIRED` challenge returned by the actual Task
+request. That challenge is valid for 300 seconds.
+
+Completion criterion: the wallet is on Base mainnet with enough USDC, the
+endpoint is eligible from the live price contract, and the exact Task request
+is preserved for signing and replay.
+
+### Standard x402 v2 request
+
+Send the normal JSON request without an API key, preserving the exact method,
+URL, and body for a possible retry:
+
+```shell
+curl -i -X POST "$BASE_URL/api/v1/suno/text_to_music" \
+  -H 'Content-Type: application/json' \
+  --data @request.json
+```
+
+For a supported paid Task endpoint, the first response is `402` with the
+standard `PAYMENT-REQUIRED` header. Pass that header to an existing x402 v2
+client connected to the agent wallet. The client signs the requirements and
+replays the same request with `PAYMENT-SIGNATURE`; do not invent an opt-in
+header, `202` payment protocol, Capability, Payment Attempt, or private
+RunAPI header. Conceptually:
+
+```text
+request = {method: POST, url: task_url, json: payload}
+response = x402_client.send(request, wallet=agent_wallet)
+# The client handles 402, PAYMENT-REQUIRED, signing, and the retry:
+#   retry request header: PAYMENT-SIGNATURE: <client-generated value>
+assert response.status == 200
+# settlement evidence is in PAYMENT-RESPONSE; keep it with the task record
+```
+
+On success, RunAPI returns the endpoint's ordinary `200` body and the standard
+`PAYMENT-RESPONSE` header. Decode that header only with the x402 client; never
+log or expose `PAYMENT-SIGNATURE`. A `200` body may describe a still-processing
+Task: asynchronous result delivery is a RunAPI Task contract, not an x402
+protocol status. Before payment, RunAPI only validates parameters and price;
+it does not download or process media.
+
+Completion criterion: the retry returns HTTP `200`, the settlement evidence is
+retained, and the signed payment value is absent from logs.
+
+The authentication split is intentional: a valid API key keeps using credits;
+a supported paid Task endpoint without credentials uses x402 and returns
+`402`; other endpoints without credentials remain `401`. Payment validation
+failure also remains `402`. x402 creates no API key, credits balance, login, or
+MCP capability.
+
+### Read the bound Task
+
+The successful `200` body adds one access grant to the endpoint's ordinary
+response; other endpoint-specific fields remain present:
+
+```json
+{
+  "task_id": "task_123",
+  "access_token": "tat_abc...",
+  "poll_url": "https://runapi.ai/api/v1/tasks/task_123?access_token=tat_abc..."
+}
+```
+
+Completion criterion: the agent has saved `task_id`, `access_token`, and the
+verbatim `poll_url` from the same successful response.
+
+Save `poll_url` verbatim and repeatedly `GET` it; the query-string token is
+the intended authentication mechanism. It is a read-only grant for exactly
+one Task and cannot read an account, list Tasks, or write anything:
+
+```shell
+curl -fsS "$POLL_URL"
+```
+
+Completion criterion: polling ends only at a terminal Task status or a defined
+`404`/transport failure; a processing response is never treated as final.
+
+The query response is:
+
+```json
+{"id":"task_123","status":"processing"}
+```
+
+Keep polling with a bounded delay while the returned status is non-terminal.
+When terminal, `completed` includes `response` with the result's HTTP
+status, content type, headers, and body; `failed` includes the terminal error
+response when retained. Do not replace the poll URL with an API-key request or
+assume the payment itself is a task result.
+
+The `tat_` token is issued once and may be read repeatedly for that Task. It
+expires 30 days after the Task reaches a terminal state. Invalid, expired, and
+wrong-Task tokens all return `404`; do not retry those as authentication or
+payment failures.
+
+Completion criterion: the agent has either received the terminal result or
+recorded the exact terminal/error state for the operator.
+
+### Failed Task and manual refund
+
+If a settled x402 Task reaches terminal `failed`, RunAPI records one full-amount
+manual refund obligation for the actual received USDC atomic amount. This is
+an operations workflow: an authorized operator sends the on-chain refund. There is no automatic chain refund and no
+refund page required. Preserve the Task ID, settlement transaction hash,
+payer wallet, network, amount, and `PAYMENT-RESPONSE` for the operator.
+
+Do not promise a refund for a processing Task, an unknown settlement, or a
+callback-delivery failure; those states do not create this terminal-failure
+obligation.
+
+Completion criterion: for terminal `failed`, the agent has retained the
+settlement evidence and submitted the refund facts to the authorized operator;
+it does not claim that a refund was executed.
 
 ## Local callback listeners
 

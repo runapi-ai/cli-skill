@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.1](https://github.com/runapi-ai/cli-skill/releases/tag/v0.3.1) - 2026-09-28
+
+### Added
+- Document x402 payment flows and Task polling for agent workflows using the RunAPI CLI.
+
+
 ## [v0.3.0](https://github.com/runapi-ai/cli-skill/releases/tag/v0.3.0) - 2026-08-17
 
 ### Added
